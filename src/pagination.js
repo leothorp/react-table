@@ -9,6 +9,8 @@ const defaultButton = props => (
   </button>
 )
 
+const noop = () => {}
+
 export default class ReactTablePagination extends Component {
   constructor (props) {
     super()
@@ -59,6 +61,7 @@ export default class ReactTablePagination extends Component {
       pageSizeOptions,
       pageSize,
       showPageJump,
+      pageJumpIsImmediate = false,
       canPrevious,
       canNext,
       onPageSizeChange,
@@ -90,18 +93,19 @@ export default class ReactTablePagination extends Component {
                   onChange={e => {
                     const val = e.target.value
                     const page = val - 1
-                    if (val === '') {
-                      return this.setState({ page: val })
-                    }
-                    this.setState({ page: this.getSafePage(page) })
-                  }}
-                  value={this.state.page === '' ? '' : this.state.page + 1}
-                  onBlur={this.applyPage}
-                  onKeyPress={e => {
-                    if (e.which === 13 || e.keyCode === 13) {
+                    const newStatePage = val === '' ? val : this.getSafePage(page)
+                    this.setState({ page: newStatePage})
+                    if (pageJumpIsImmediate) {
                       this.applyPage()
                     }
                   }}
+                  value={this.state.page === '' ? '' : this.state.page + 1}
+                  onBlur={pageJumpIsImmediate ? this.applyPage : noop}
+                  onKeyPress={pageJumpIsImmediate ? e => {
+                    if (e.which === 13 || e.keyCode === 13) {
+                      this.applyPage()
+                    }
+                  } : noop}
                 />
               </div>
             ) : (
